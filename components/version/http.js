@@ -1,8 +1,8 @@
-/*
+/*/*
  * @Author: iceStone
  * @Date:   2016-02-17 15:15:22
  * @Last Modified by:   iceStone
- * @Last Modified time: 2016-02-17 16:05:11
+ * @Last Modified time: 2016-02-19 10:49:05
  */
 
 'use strict';
@@ -14,17 +14,25 @@
   http.service('HttpService', ['$window', '$document', function($window, $document) {
     // url : http://api.douban.com/vsdfsdf -> <script> -> html就可自动执行
     this.jsonp = function(url, data, callback) {
-      var fnSuffix = Math.random().toString().replace('.', '');
-      var cbFuncName = 'my_json_cb_' + fnSuffix;
-      // 不推荐
-      $window[cbFuncName] = callback;
+      // if (typeof data == 'function') {
+      //   callback = data;
+      // }
       var querystring = url.indexOf('?') == -1 ? '?' : '&';
       for (var key in data) {
         querystring += key + '=' + data[key] + '&';
       }
+
+      var fnSuffix = Math.random().toString().replace('.', '');
+      var cbFuncName = 'my_json_cb_' + fnSuffix;
       querystring += 'callback=' + cbFuncName;
+
       var scriptElement = $document[0].createElement('script');
       scriptElement.src = url + querystring;
+      // 不推荐
+      $window[cbFuncName] = function(data) {
+        callback(data);
+        $document[0].body.removeChild(scriptElement);
+      };
       $document[0].body.appendChild(scriptElement);
     };
   }]);
